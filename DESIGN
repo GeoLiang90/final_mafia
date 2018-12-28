@@ -1,0 +1,22 @@
+George Liang, Sajed Nahian, Richard Wong
+
+One of the games that demonstrates the basics of systems is Mafia. It involves writing and storing wills each night 
+(in case you are killed) and having a communal text chat during the day to lynch the member of the town that could be a serial killer
+or part of the mafia. The mafia wins by eliminating innocent town members and the serial killer wins by eliminating everyone in the town. 
+
+A computer acts as a server for all players to connect to with a maximum of (6 to 8) players during a connection period. 
+The game starts once an acceptable amount of players have connected. Users will be assigned roles and names and the first 
+night phase begins. They can choose to perform a special action (depends on role) or write in their will during this 30 second phase. 
+After the night phase is over, players will have 5 minutes to talk with the rest of the town by text communication to decide which player 
+to kick out of the game through a vote. If no players are lynched, the next night begins until a group wins (town, mafia, or serial killer). 
+
+We will hold player information in a struct where we have to allocate memory. We will include the use of files, shared memory,
+and semaphores for the text documents that need to be stored such as player will statements and the town chat. Signals will be
+used to terminate a client connection to the server. Pipes will be used in combination with networking to establish a connection
+from our multiple clients to the server. The project will be broken down into networking, main game (time keeping, reading and writing), 
+player handling (structs, interactions). These roles will eventually be split between the three of us or redivided. 
+
+Proposal (12/28)
+Client to server connection
+Main Game skeleton
+Player features
