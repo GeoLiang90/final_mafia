@@ -1,5 +1,5 @@
 #include "networking.h"
-
+#include "mafia.c"
 void process(char *s);
 void subserver(int *from_clients);
 
@@ -24,21 +24,24 @@ int main() {
     player_list = (int *) calloc(6, sizeof(int));
     while (player_count < 6) {
       player_list[player_count] = server_connect(listen_socket);
-      printf("[server] player%d has connected\n", player_count + 1);
+      printf("[server] Player %d has connected\n", player_count + 1);
       player_count++;
     }
-    
     /*
     int client_socket = server_connect(listen_socket);
     printf("[server] player1 has connected\n");
     */
     //wait for multiple clients to connect
     //create list of client sockets,
-    
     f = fork();
     if (!f) {
       printf("[subserver %d] starting game\n", getpid());
+      run_game(player_list);
       exit(0);
+    }
+    while (!(player_count < 0)){
+      close(player_list[player_count]);
+      player_count--;
     }
     close(client_socket);
   }
