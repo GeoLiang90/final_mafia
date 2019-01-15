@@ -1,5 +1,5 @@
 #include "networking.h"
-#include "mafia.c"
+#include "mafia.h"
 void process(char *s);
 void subserver(int *from_clients);
 

@@ -1,29 +1,29 @@
-#include <time.h>
-#include "player.h"
-#include <stdio.h>
+#include "mafia.h"
 
 int run_game(int * socket_list){
   int game_state = 0;
   //Player Structs go here
   struct Player * player_list = (struct Player *) calloc(6,sizeof(struct Player));
-  int pop_count = 0
+  int pop_count = 0;
 
   while (pop_count < 6){
 
     if (pop_count == 0){
-      player_list[0]-> socket_fd = socket_list[0];
+      (&player_list[0])-> socket_fd = socket_list[0];
     }
     if (pop_count == 1){
-      player_list[1]-> socket_fd = socket_list[1];
+      (&player_list[1])-> socket_fd = socket_list[1];
     }
     else {
-      player_list[pop_count] -> socket_fd = socket_list[pop_count];
+      (&player_list[pop_count]) -> socket_fd = socket_list[pop_count];
     }
-    player_count += 1;
+    pop_count += 1;
   }
 
-  while(1){
-    if (game_state == 0){
+  if (game_state == 0){
+    for (int i = 0; i < 6; i++){
+      send(socket_list[i], "Enter your nickname: ", 25,0);
+    }
       //Pre-Game goes here
       //printf("Pre-Game: Enter your alias");
       //make sure the clients get appropriate structs and what not
@@ -38,8 +38,6 @@ int run_game(int * socket_list){
     }
     if (game_state == 3){
       printf("Game End");
-      break;
-  }
   }
   return 0;
 }

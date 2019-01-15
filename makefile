@@ -14,6 +14,3 @@ client.o: client.c networking.h
 
 mafia.o: mafia.c player.h
 	gcc -c mafia.c
-
-mafia: mafia.o
-	gcc -o mafia mafia.o
