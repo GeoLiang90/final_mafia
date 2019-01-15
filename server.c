@@ -13,7 +13,7 @@ int main() {
 
   listen_socket = server_setup();
 
-  //while (1) {
+  while (1) {
     printf("[server] new game\n");
     printf("[server] waiting for players\n");
 
@@ -23,44 +23,21 @@ int main() {
     player_count = 0;
     player_list = (int *) calloc(6, sizeof(int));
     while (player_count < 6) {
+      //wait for multiple clients to connect
+      //create list of client sockets,
       player_list[player_count] = server_connect(listen_socket);
       printf("[server] Player %d has connected\n", player_count + 1);
       player_count++;
     }
-    /*
-    int client_socket = server_connect(listen_socket);
-    printf("[server] player1 has connected\n");
-    */
-    //wait for multiple clients to connect
-    //create list of client sockets,
     f = fork();
     if (!f) {
       printf("[subserver %d] starting game\n", getpid());
       run_game(player_list);
-      exit(0);
+      //exit(0);
     }
-    while (!(player_count < 0)){
-      close(player_list[player_count]);
+    while (!(player_count == 0)){
+      close(player_list[player_count-1]);
       player_count--;
     }
-    close(client_socket);
-  //}
-}
-
-void subserver(int * client_sockets) {
-  char buffer[BUFFER_SIZE];
-  /*
-  //for testing client select statement
-  strncpy(buffer, "hello client", sizeof(buffer));
-  write(client_socket, buffer, sizeof(buffer));
-
-  while (read(client_socket, buffer, sizeof(buffer))) {
-
-    printf("[subserver %d] received: [%s]\n", getpid(), buffer);
-    process(buffer);
-    write(client_socket, buffer, sizeof(buffer));
-  }//end read loop
-  close(client_socket);
-  exit(0);
-  */
+  }
 }
