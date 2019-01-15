@@ -1,7 +1,7 @@
 select: server client
 
-server: server.o networking.o
-	gcc -o server server.o networking.o
+server: server.o networking.o mafia.o
+	gcc -o server server.o networking.o mafia.o
 
 client: client.o networking.o
 	gcc -o client client.o networking.o
