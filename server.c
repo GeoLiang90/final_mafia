@@ -13,7 +13,7 @@ int main() {
 
   listen_socket = server_setup();
 
-  while (1) {
+  //while (1) {
     printf("[server] new game\n");
     printf("[server] waiting for players\n");
 
@@ -44,7 +44,7 @@ int main() {
       player_count--;
     }
     close(client_socket);
-  }
+  //}
 }
 
 void subserver(int * client_sockets) {
