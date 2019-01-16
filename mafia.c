@@ -22,6 +22,7 @@ int run_game(int * socket_list){
 
   if (game_state == 0){
     for (int i = 0; i < 6; i++){
+      printf("Test");
       send(socket_list[i], "Enter your nickname: ", 25,0);
     }
       //Pre-Game goes here
