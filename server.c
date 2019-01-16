@@ -33,7 +33,7 @@ int main() {
     if (!f) {
       printf("[subserver %d] starting game\n", getpid());
       run_game(player_list);
-      //exit(0);
+      exit(0);
     }
     while (!(player_count == 0)){
       close(player_list[player_count-1]);
