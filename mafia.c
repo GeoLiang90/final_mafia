@@ -77,6 +77,9 @@ int run_game(int * socket_list){
     if (game_state == 1){
       printf("Day Time: The sun has now risen");
       //Course through the list of player and check isDead then list who is connected
+      if (check_win(player_list) != 0){
+        game_state += 2;
+      }
     }
     if (game_state == 2){
       printf("Night Time: Perform your actions if you have one");
