@@ -50,6 +50,7 @@ void assign_roles(int * socket_list, struct Player * p_list){
       strcpy((&p_list[pop_count])-> role, "mafia");
       (&p_list[pop_count])-> perms = 1;
       write(socket_list[pop_count],buff,sizeof(buff));
+
     }
     else if (pop_count == 1){
       char buff[250];
@@ -59,6 +60,7 @@ void assign_roles(int * socket_list, struct Player * p_list){
       strcpy((&p_list[pop_count])-> role, "sk");
       (&p_list[pop_count])-> perms = 1;
       write(socket_list[pop_count],buff,sizeof(buff));
+
     }
     else {
       char buff[250];
@@ -167,11 +169,12 @@ int run_game(int * socket_list){
         write(socket_list[i],"g1",5);
         write(socket_list[i],roster,256);
       }
-
       game_state += 1;
     }
     if(game_state == 2){
-      printf("Day Time: The sun has now risen");
+      for (int i = 0; i < PLAYER_COUNT; i++){
+        write(socket_list[i],"g2",5);
+        }
       break;
       //Course through the list of player and check isDead then list who is connected
       if (check_win(player_list) != 0){
