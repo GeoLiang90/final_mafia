@@ -17,17 +17,17 @@ int main() {
     printf("[server] new game\n");
     printf("[server] waiting for players\n");
 
-    int player_count;
+    int p_count;
     int * player_list;
 
-    player_count = 0;
-    player_list = (int *) calloc(6, sizeof(int));
-    while (player_count < 6) {
+    p_count = 0;
+    player_list = (int *) calloc(3, sizeof(int));
+    while (p_count < 3) {
       //wait for multiple clients to connect
       //create list of client sockets,
-      player_list[player_count] = server_connect(listen_socket);
-      printf("[server] Player %d has connected\n", player_count + 1);
-      player_count++;
+      player_list[p_count] = server_connect(listen_socket);
+      printf("[server] Player %d has connected\n", p_count + 1);
+      p_count++;
     }
     f = fork();
     if (!f) {
@@ -35,9 +35,9 @@ int main() {
       run_game(player_list);
       exit(0);
     }
-    while (!(player_count == 0)){
-      close(player_list[player_count-1]);
-      player_count--;
+    while (!(p_count == 0)){
+      close(player_list[p_count-1]);
+      p_count--;
     }
   }
 }
