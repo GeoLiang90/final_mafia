@@ -20,8 +20,6 @@ int main(int argc, char **argv) {
     if (strcmp(state_read, "g0")==0){
       char msg[BUFFER_SIZE];
       send_name(server_socket);
-      read(server_socket,msg,BUFFER_SIZE);
-      printf("%s",msg);
     }
     /*
     if (strcmp(buffer,"Enter your nickname: ") == 0 ){

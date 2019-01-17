@@ -71,6 +71,35 @@ void assign_roles(int * socket_list, struct Player * p_list){
   }
   return;
 }
+void chop_space(char * string){
+  int z = 0;
+  while(string[z] != '\n'){
+    z++;
+  }
+  string[z] = '\0';
+  return;
+}
+void assign_name(int * socket_list, int socket_n, struct Player * p_list, int p_n){
+  char name[20];
+    int temp = fork();
+    if (temp){
+        read(socket_list[socket_n],name,20);
+        chop_space(name);
+        strcpy((&p_list[p_n])-> nickname,name);
+    }
+  return;
+}
+
+int verify_names(struct Player * p_list){
+  int i = 0;
+  for(int z = 0; z < PLAYER_COUNT; z++){
+    if (*((&p_list[z]) -> nickname) != '\0') {
+      i += 1;
+    }
+  }
+  return i;
+}
+
 int run_game(int * socket_list){
   int game_state = 0;
   //Player Structs go here
@@ -79,14 +108,19 @@ int run_game(int * socket_list){
   if(game_state == 0){
     char name[20];
     //printf("%d \n", PLAYER_COUNT);
+
     for (int i = 0; i < PLAYER_COUNT; i++){
       write(socket_list[i], "g0", 20);
-      int temp = fork();
-      if (temp){
-        read(socket_list[i],name,20);
-        strcpy((&player_list[i])-> nickname,name);
-      }
+      assign_name(socket_list,i,player_list,i);
     }
+    // Now I have to put in logic that only prints once all users are there
+    //***DONE***** This is mostly POC
+    if (verify_names(player_list) == 3){
+    printf("%s \n",(&player_list[0]) -> nickname);
+    printf("%s \n",(&player_list[1]) -> nickname);
+    printf("%s \n",(&player_list[2]) -> nickname);
+    }
+    /*
     char names[PLAYER_COUNT][21];
     char name_list[(PLAYER_COUNT + 1) * 30];
     strcpy(name_list,"Current Roster: \n");
@@ -105,27 +139,32 @@ int run_game(int * socket_list){
         }
         break;
       }
-      if (name_list[entered]){
+      if (names[entered]){
         entered += 1;
       }
     }
+    */
     //game_state += 1;
-    }
+  }// Game state ends hereeeee
       //Pre-Game goes here
       //printf("Pre-Game: Enter your alias");
       //make sure the clients get appropriate structs and what not
-    if(game_state == 1){
+    if (game_state == 1){
+      printf("Pre Game: Sending Roster to all");
+
+    }
+    if(game_state == 2){
       printf("Day Time: The sun has now risen");
       //Course through the list of player and check isDead then list who is connected
       if (check_win(player_list) != 0){
         game_state += 2;
       }
     }
-    if(game_state == 2){
+    if(game_state == 3){
       printf("Night Time: Perform your actions if you have one");
       //So I think structs will have the will stored there but also the actions that each person can do
     }
-    if(game_state == 3){
+    if(game_state == 4){
       printf("Game End");
     }
   return 0;
