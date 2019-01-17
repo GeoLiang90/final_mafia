@@ -81,48 +81,66 @@ void chop_space(char * string){
   string[z] = '\0';
   return;
 }
-void assign_name(int * socket_list, int socket_n, struct Player * p_list, int p_n){
+void assign_name(int * socket_list, struct Player * p_list){
     int temp = fork();
-    if (temp){
-        char name[20];
-        read(socket_list[socket_n],name,20);
-        chop_space(name);
-        strcpy((&p_list[p_n])-> nickname,name);
+    for(int i = 0; i < PLAYER_COUNT; i++){
+      if (!temp){
+        char name[25];
+        //while(strlen(name) == 0){
+          read(socket_list[i],name,25);
+          chop_space(name);
+        //}
+        strcpy((&p_list[i])-> nickname,name);
+      }
     }
+        //exit(0);
+    //}
   return;
 }
 
 int verify_names(struct Player * p_list){
   int count = 0;
   for(int z = 0; z < PLAYER_COUNT; z++){
-    if (((&p_list[z])->nickname)[0] != '\0') {
+    if (strlen((&p_list[z])->nickname) > 0) {
       count += 1;
     }
   }
   return count;
 }
-
+/* Don't use this method unless you can fix it
 void write_client(int * socket_list, char * buf){
   //Assume the clients are already listening
+  //int temp = fork();
   for (int i = 0; i < PLAYER_COUNT; i++){
-    write(socket_list[i],buf, sizeof(buf));
+    //int temp = fork();
+    //if (!temp){
+      write(socket_list[i],buf, sizeof(buf));
+    //}
   }
   return;
 }
-
+*/
 int run_game(int * socket_list){
   int game_state = 0;
   //Player Structs go here
   struct Player * player_list = (struct Player *) calloc(PLAYER_COUNT,sizeof(struct Player));
   assign_roles(socket_list,player_list);
+  while(1){
   if(game_state == 0){
     for (int i = 0; i < PLAYER_COUNT; i++){
+      //Basically tell the client to be ready to send stuff
       write(socket_list[i],"g0",5);
-      assign_name(socket_list,i,player_list,i);
     }
+    assign_name(socket_list,player_list);
+    //sleep(10);
+    /*
+    printf("%s \n",(&player_list[0]) -> nickname);
+    printf("%s \n",(&player_list[1]) -> nickname);
+    printf("%s \n",(&player_list[2]) -> nickname);
+    */
     while(1){
       int verify = verify_names(player_list);
-      printf("%d \n", verify);
+      //printf("%d \n", verify);
       if (verify == PLAYER_COUNT){
         printf("All users have set names \n");
         break;
@@ -131,19 +149,30 @@ int run_game(int * socket_list){
     game_state  = 1;
   }// Game state ends hereeeee
     if (game_state == 1){
-      write_client(socket_list, "g1");
       printf("Pre Game: Sending Roster to all \n");
       char roster[256];
       strcpy(roster,"Current Roster: \n");
       for (int i = 0; i < PLAYER_COUNT; i++){
         strcat(roster,((&player_list[i])-> nickname));
-        //strcat(roster,"\n");
+        strcat(roster,"\n");
       }
       printf("%s \n", roster);
+      //These do not work properly until you fix write_client
+      /*
+      write_client(socket_list,"g1");
       write_client(socket_list,roster);
+      */
+
+      for (int i = 0; i < PLAYER_COUNT; i++){
+        write(socket_list[i],"g1",5);
+        write(socket_list[i],roster,256);
+      }
+
+      game_state += 1;
     }
     if(game_state == 2){
       printf("Day Time: The sun has now risen");
+      break;
       //Course through the list of player and check isDead then list who is connected
       if (check_win(player_list) != 0){
         game_state += 2;
@@ -155,6 +184,8 @@ int run_game(int * socket_list){
     }
     if(game_state == 4){
       printf("Game End");
+      //break;
     }
+  }
   return 0;
 }
