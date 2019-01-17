@@ -1,4 +1,6 @@
 #include "mafia.h"
+#include <string.h>
+#include <unistd.h>
 int PLAYER_COUNT = 3;
 int T_WIN = 1;
 int M_WIN = 2;
@@ -60,7 +62,6 @@ void assign_roles(int * socket_list, struct Player * p_list){
       strcpy((&p_list[pop_count])-> role, "sk");
       (&p_list[pop_count])-> perms = 1;
       write(socket_list[pop_count],buff,sizeof(buff));
-
     }
     else {
       char buff[250];
@@ -127,11 +128,13 @@ int run_game(int * socket_list){
   //Player Structs go here
   struct Player * player_list = (struct Player *) calloc(PLAYER_COUNT,sizeof(struct Player));
   assign_roles(socket_list,player_list);
+  sleep(2);
   while(1){
   if(game_state == 0){
     for (int i = 0; i < PLAYER_COUNT; i++){
       //Basically tell the client to be ready to send stuff
-      write(socket_list[i],"g0",5);
+	printf("running\n");
+        write(socket_list[i], "g0", 5);
     }
     assign_name(socket_list,player_list);
     //sleep(10);

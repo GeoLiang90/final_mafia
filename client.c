@@ -1,5 +1,6 @@
 #include "networking.h"
 #include "mafia.h"
+
 int send_name(int serv_sock){
   char name[20];
   printf("Please enter your nickname: ");
