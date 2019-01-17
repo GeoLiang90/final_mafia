@@ -1,14 +1,20 @@
 #include "networking.h"
 
-void send_name(int serv_sock){
+int send_name(int serv_sock){
   char name[20];
   printf("Please enter your nickname: ");
   fgets(name, 20, stdin);
-  write(serv_sock,name,20);
+  if (*name != '\n'){
+    write(serv_sock,name,20);
+    //printf("I ran \n");
+    return 1;
+  }
+  return 0;
 }
 int main(int argc, char **argv) {
   int server_socket;
   char initial[BUFFER_SIZE];
+  int sent_name = 0;
   printf("[Client] Waiting for connection to server \n");
   server_socket = client_setup( TEST_IP );
   read(server_socket,initial,BUFFER_SIZE);
@@ -17,9 +23,16 @@ int main(int argc, char **argv) {
   while (1) {
     char state_read[BUFFER_SIZE];
     read(server_socket,state_read,BUFFER_SIZE);
-    if (strcmp(state_read, "g0")==0){
+    if (strcmp(state_read, "g0")== 0 && !(sent_name)){
       char msg[BUFFER_SIZE];
-      send_name(server_socket);
+      //printf("aiosmfpiam \n");
+      sent_name = send_name(server_socket);
+    }
+    if (strcmp(state_read, "g0")== 0 && sent_name){
+      printf("Please Wait! Your name has been set \n");
+    }
+    if (strcmp(state_read, "g1")==0){
+      //Listen for a message
     }
     /*
     if (strcmp(buffer,"Enter your nickname: ") == 0 ){

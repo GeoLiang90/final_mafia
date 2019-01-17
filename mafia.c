@@ -100,6 +100,14 @@ int verify_names(struct Player * p_list){
   return i;
 }
 
+void write_client(int * socket_list, char * buf){
+  //Assume the clients are already listening
+  for (int i = 0; i < PLAYER_COUNT; i++){
+    write(socket_list[i],buf, sizeof(buf));
+  }
+  return;
+}
+
 int run_game(int * socket_list){
   int game_state = 0;
   //Player Structs go here
@@ -119,39 +127,21 @@ int run_game(int * socket_list){
     printf("%s \n",(&player_list[0]) -> nickname);
     printf("%s \n",(&player_list[1]) -> nickname);
     printf("%s \n",(&player_list[2]) -> nickname);
+    game_state += 1;
     }
-    /*
-    char names[PLAYER_COUNT][21];
-    char name_list[(PLAYER_COUNT + 1) * 30];
-    strcpy(name_list,"Current Roster: \n");
-    for (int i = 0; i < PLAYER_COUNT; i++){
-      strcpy(names[i],(&player_list[i])-> nickname);
-      strcat(name_list,((&player_list[i])-> nickname));
-      strcat(name_list,"\n");
-    }
-    while(1){
-      int entered = 0;
-      printf("%d", entered);
-      if (entered == PLAYER_COUNT){
-        for (int i = 0; i < PLAYER_COUNT; i++){
-        write(socket_list[i], "Game is about to start \n", 40);
-        write(socket_list[i], name_list,sizeof(name_list));
-        }
-        break;
-      }
-      if (names[entered]){
-        entered += 1;
-      }
-    }
-    */
-    //game_state += 1;
   }// Game state ends hereeeee
-      //Pre-Game goes here
-      //printf("Pre-Game: Enter your alias");
-      //make sure the clients get appropriate structs and what not
     if (game_state == 1){
-      printf("Pre Game: Sending Roster to all");
+      write_client(socket_list, "g1");
 
+      printf("Pre Game: Sending Roster to all");
+      
+      char roster[(PLAYER_COUNT + 1) * 30];
+      strcpy(roster,"Current Roster: \n");
+      for (int i = 0; i < PLAYER_COUNT; i++){
+        strcat(roster,((&player_list[i])-> nickname));
+        strcat(roster,"\n");
+      }
+      write_client(socket_list,roster);
     }
     if(game_state == 2){
       printf("Day Time: The sun has now risen");
