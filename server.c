@@ -29,12 +29,12 @@ int main() {
       printf("[server] Player %d has connected\n", p_count + 1);
       p_count++;
     }
-    f = fork();
-    if (!f) {
-      printf("[subserver %d] starting game\n", getpid());
+    //f = fork();
+    //if (!f) {
+      //printf("[subserver %d] starting game\n", getpid());
       run_game(player_list);
-      exit(0);
-    }
+      //exit(0);
+    //}
     while (!(p_count == 0)){
       close(player_list[p_count-1]);
       p_count--;
