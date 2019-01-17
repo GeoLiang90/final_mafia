@@ -67,7 +67,6 @@ void assign_roles(int * socket_list, struct Player * p_list){
       (&p_list[pop_count])-> isalive = 1;
       strcpy((&p_list[pop_count])-> role, "town");
       (&p_list[pop_count])-> perms = 0;
-      //printf("I get here \n");
       write(socket_list[pop_count],buff,sizeof(buff));
     }
     pop_count += 1;
@@ -83,9 +82,9 @@ void chop_space(char * string){
   return;
 }
 void assign_name(int * socket_list, int socket_n, struct Player * p_list, int p_n){
-  char name[20];
     int temp = fork();
     if (temp){
+        char name[20];
         read(socket_list[socket_n],name,20);
         chop_space(name);
         strcpy((&p_list[p_n])-> nickname,name);
@@ -94,13 +93,13 @@ void assign_name(int * socket_list, int socket_n, struct Player * p_list, int p_
 }
 
 int verify_names(struct Player * p_list){
-  int i = 0;
+  int count = 0;
   for(int z = 0; z < PLAYER_COUNT; z++){
-    if (*((&p_list[z]) -> nickname) != '\0') {
-      i += 1;
+    if (((&p_list[z])->nickname)[0] != '\0') {
+      count += 1;
     }
   }
-  return i;
+  return count;
 }
 
 void write_client(int * socket_list, char * buf){
@@ -117,33 +116,30 @@ int run_game(int * socket_list){
   struct Player * player_list = (struct Player *) calloc(PLAYER_COUNT,sizeof(struct Player));
   assign_roles(socket_list,player_list);
   if(game_state == 0){
-    char name[20];
-    //printf("%d \n", PLAYER_COUNT);
-
     for (int i = 0; i < PLAYER_COUNT; i++){
-      write(socket_list[i], "g0", 20);
+      write(socket_list[i],"g0",5);
       assign_name(socket_list,i,player_list,i);
     }
-    // Now I have to put in logic that only prints once all users are there
-    //***DONE***** This is mostly POC
-    if (verify_names(player_list) == 3){
-    printf("%s \n",(&player_list[0]) -> nickname);
-    printf("%s \n",(&player_list[1]) -> nickname);
-    printf("%s \n",(&player_list[2]) -> nickname);
-    game_state += 1;
+    while(1){
+      int verify = verify_names(player_list);
+      printf("%d \n", verify);
+      if (verify == PLAYER_COUNT){
+        printf("All users have set names \n");
+        break;
+      }
     }
+    game_state  = 1;
   }// Game state ends hereeeee
     if (game_state == 1){
       write_client(socket_list, "g1");
-
-      printf("Pre Game: Sending Roster to all");
-
-      char roster[(PLAYER_COUNT + 1) * 30];
+      printf("Pre Game: Sending Roster to all \n");
+      char roster[256];
       strcpy(roster,"Current Roster: \n");
       for (int i = 0; i < PLAYER_COUNT; i++){
         strcat(roster,((&player_list[i])-> nickname));
-        strcat(roster,"\n");
+        //strcat(roster,"\n");
       }
+      printf("%s \n", roster);
       write_client(socket_list,roster);
     }
     if(game_state == 2){
