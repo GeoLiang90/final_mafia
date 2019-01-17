@@ -1,5 +1,8 @@
 #include "mafia.h"
-
+int PLAYER_COUNT = 3;
+int T_WIN = 1;
+int M_WIN = 2;
+int S_WIN = 3;
 int check_win(struct Player * p_list){
     int life_check = 0;
     for (int i = 0; i < PLAYER_COUNT; i++){
@@ -134,7 +137,7 @@ int run_game(int * socket_list){
       write_client(socket_list, "g1");
 
       printf("Pre Game: Sending Roster to all");
-      
+
       char roster[(PLAYER_COUNT + 1) * 30];
       strcpy(roster,"Current Roster: \n");
       for (int i = 0; i < PLAYER_COUNT; i++){

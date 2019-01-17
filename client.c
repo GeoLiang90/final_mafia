@@ -27,8 +27,9 @@ int main(int argc, char **argv) {
     if (strcmp(state_read, "g0")== 0 && !(sent_name)){
       sent_name = send_name(server_socket);
     }
-    if (strcmp(state_read, "g0")== 0 && sent_name){
+    if (strcmp(state_read, "g0")== 0 && sent_name == 1){
       printf("Please Wait! Your name has been set \n");
+      sent_name += 1;
     }
     if (strcmp(state_read, "g1")==0 && roster == 0){
       //Listen for a message

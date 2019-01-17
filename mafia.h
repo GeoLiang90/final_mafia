@@ -14,8 +14,8 @@ void assign_name(int * socket_list, int socket_n, struct Player * p_list, int p_
 int verify_names(struct Player * p_list);
 void chop_space(char * string);
 void write_client(int * socket_list, char * buf);
-const int PLAYER_COUNT = 3;
-const int T_WIN = 1;
-const int  M_WIN  = 2;
-const int S_WIN = 3;
+extern int PLAYER_COUNT;
+extern int T_WIN;
+extern int  M_WIN;
+extern int S_WIN;
 #endif

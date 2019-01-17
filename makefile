@@ -6,7 +6,7 @@ server: server.o networking.o mafia.o
 client: client.o networking.o
 	gcc -o client client.o networking.o
 
-server.o: server.c networking.h
+server.o: server.c networking.h mafia.h
 	gcc -c server.c
 
 client.o: client.c networking.h
@@ -14,3 +14,6 @@ client.o: client.c networking.h
 
 mafia.o: mafia.c player.h
 	gcc -c mafia.c
+
+clean:
+	rm *.o
