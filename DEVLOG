@@ -1,3 +1,13 @@
+01/17/2019 Sajed Nahian: Found fix to the problem where the game was sometimes unable to start. 
+
+01/17/2019 Sajed Nahian/Richard Wong: Complete night game state, and finished game state of morning, will and suspect. Core functionality
+           of the project has been completed. Still need to work on fixing a few bugs where the same message is sent multiple times
+	   and the glitch where sometimes the game is not able to start.
+
+01/16/2019 Sajed Nahian/Richard Wong: Worked on the logic for the game states. Worked on the night game state where users input
+	   an action which is done the following morning. Users can now connect, do an action and see the impact of action
+	   the following morning
+
 01/16/2019 George Liang: Built off the basic networking framework to build the gamestate framework.
 	   Established communication through text from the server to the client. Verified progressable
 	   gamestates and implemented the pregame. Clients are assigned names and roles. 
