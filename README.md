@@ -13,3 +13,8 @@ Our project is based off of the game Mafia which consists of mafia and town memb
 ### Known Bugs:
 - Game doesn't completely end, but people do dominate by becoming the sole survivor.
 - Char Data corrupted from writing and reading through network sockets.
+
+### Known Assumption:
+- Everyone inputs the correct name as spelled in the roster given in the beginning.
+- Any chat communication would probably have to take place between users talking to each each other in real life.
+- Users only input the actions they are presented. 
