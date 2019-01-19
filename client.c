@@ -80,7 +80,10 @@ void send_msg(int serv_sock, char * msg){
 
 int main(int argc, char **argv) {
   printf("[Client] Waiting for connection to server \n");
-  server_socket = client_setup(TEST_IP);
+  if (argc == 2)
+    server_socket = client_setup( argv[1]);
+  else
+    server_socket = client_setup( TEST_IP );
   read(server_socket,buff,BUFFER_SIZE);
   //sleep(1);
   if (strstr(buff,"Mafia")){
