@@ -43,7 +43,7 @@ int S_WIN = 3;
 //     }
 //     return 0;
 //   }
-
+int game_state = 0;
 int checkWin(struct Player * p_list) {
   int nonMafiaCount = 0;
   int mafiaCount = 0;
@@ -66,7 +66,7 @@ int checkWin(struct Player * p_list) {
   }
   if (mafiaCount == 0) {
       // mafia lose
-    game_state = 6;
+      game_state = 6;
     return 0;
   } if (nonMafiaCount <= 1) {
      // mafia win
@@ -164,7 +164,6 @@ void write_client(int * socket_list, char * buf){
   return;
 }
 */
-int game_state = 0;
 int run_game(int * socket_list){
   //Player Structs go here
   struct Player * player_list = (struct Player *) calloc(PLAYER_COUNT,sizeof(struct Player));
@@ -328,6 +327,7 @@ for (int i = 0; i < PLAYER_COUNT; i++){
 */
 
 void suspectKill (int * socket_list, struct Player * p_list) {
+    printf("is this running\n");
     int number = rand() % (PLAYER_COUNT);
     char playerToKill[20];
     char playerToDieWill[100];
@@ -366,11 +366,6 @@ void suspectKill (int * socket_list, struct Player * p_list) {
     //Reseting actions
     for(int i = 0; i < PLAYER_COUNT; i++){
       strcpy((&p_list[i])-> action, "");
-    }
-
-    // Reset votes
-    for(int i = 0; i < PLAYER_COUNT; i++){
-      (&p_list[i])-> votes = 0;
     }
 }
 
