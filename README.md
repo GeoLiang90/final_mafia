@@ -12,4 +12,4 @@ Our project is based off of the game Mafia which consists of mafia and town memb
 
 ### Known Bugs:
 - Game doesn't completely end, but people do dominate.
-- Data corrupted from writing and reading through network sockets.
+- Char Data corrupted from writing and reading through network sockets.
