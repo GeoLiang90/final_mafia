@@ -6,7 +6,7 @@
 int PLAYER_COUNT = 3;
 int T_WIN = 1;
 int M_WIN = 2;
-int S_WIN = 3;
+
 
 
 int game_state = 0;
@@ -132,8 +132,10 @@ void action(int * socket_list, struct Player * p_list){
   }
   for(int i = 0; i < PLAYER_COUNT; i++){
     if (strncmp((&p_list[i])-> nickname,killed,sizeof(killed)) == 0){
-      //printf("I ran \n");
+
+
       (&p_list[i])-> isalive = 0;
+      write(socket_list[i], "dead", 5);
     }
   }
       //exit(0);
@@ -199,15 +201,18 @@ void handle_vote(int * socket_list, struct Player * p_list){
       highest = votes[z];
     }
   }
+  /*
   for (int a = 0; a < PLAYER_COUNT; a++){
     printf("%s ",(&p_list[a]) -> nickname);
     printf("%d \n",votes[a]);
   }
   printf("%s", (&p_list[position]) -> nickname);
   printf("%d \n",highest);
+  */
   (&p_list[position]) -> isalive = 0;
   (&p_list[position]) -> announced = 1;
   (&p_list[position]) -> executed = 1;
+  write(socket_list[position], "dead", 5);
   /*
   char end[50];
   strcpy(end,"Farewell cruel world this person has passed: ");
@@ -235,31 +240,23 @@ void announce_executed(int * socket_list,struct Player* player_list){
 }
 
 int check_win(struct Player * p_list){
-    int life_check = 0;
+    int town_alive = 0;
+    int mafia_alive = 0;
     for (int i = 0; i < PLAYER_COUNT; i++){
-      if ((&p_list[i])-> isalive == 1){
-        life_check += 1;
+      if (strcmp((&p_list[i])->role,"mafia")) {
+        mafia_alive += 1;
+      }
+      if (strcmp((&p_list[i])->role,"town") && (&p_list[i])-> isalive == 1){
+        town_alive += 1;
       }
     }
-    if (life_check < PLAYER_COUNT){
-      int count_mafia = 0;
-      int count_town = 0;
-      for(int z = 0; z < PLAYER_COUNT; z++){
-        if (((&p_list[z]) -> isalive == 1) && (strcmp((&p_list[z]) -> role,"town") == 0)){
-          count_town += 1;
-        }
-        if (((&p_list[z]) -> isalive == 1) && (strcmp((&p_list[z]) -> role,"mafia") == 0)){
-          count_mafia += 1;
-        }
-      }
-      if (count_mafia == 1 && count_town ==0){
-        return M_WIN;
-      }
-      if (count_mafia == 0 && count_town >0){
-        return T_WIN;
-      }
+    if(!town_alive){
+      return M_WIN;
     }
-    return 0;
+    if(!mafia_alive){
+      return T_WIN;
+    }
+    return -1;
 }
 
 
@@ -269,6 +266,7 @@ int run_game(int * socket_list){
   assign_roles(socket_list,player_list);
   sleep(1);
   while(1){
+
   if(game_state == 0){
     for (int i = 0; i < PLAYER_COUNT; i++){
       //Basically tell the client to be ready to send stuff
@@ -316,10 +314,22 @@ int run_game(int * socket_list){
     }
     if(game_state == 2){
 
+        if (check_win(player_list)){
+          if (check_win(player_list) == 1){
+            for (int i = 0; i < PLAYER_COUNT; i++){
+              write(socket_list[i],"tw", 15);
+            }
+          }
+          if (check_win(player_list) == 2){
+            for (int i = 0; i < PLAYER_COUNT; i++){
+              write(socket_list[i],"mw", 15);
+            }
+          }
+        }
       for (int i = 0; i < PLAYER_COUNT; i++){
-        if ((&player_list[i])-> isalive){
+
         write(socket_list[i],"g2",5);
-      }
+
         //sleep(1);
       }
       action(socket_list,player_list);
@@ -333,20 +343,48 @@ int run_game(int * socket_list){
       // }
     }
     if(game_state == 3){
-      for (int i = 0; i < PLAYER_COUNT; i++){
-        if ((&player_list[i])-> isalive){
-        write(socket_list[i],"g3",5);
+
+      if (check_win(player_list)){
+        if (check_win(player_list) == 1){
+          for (int i = 0; i < PLAYER_COUNT; i++){
+            write(socket_list[i],"tw", 15);
+          }
+        }
+        if (check_win(player_list) == 2){
+          for (int i = 0; i < PLAYER_COUNT; i++){
+            write(socket_list[i],"mw", 15);
+          }
+        }
       }
+      for (int i = 0; i < PLAYER_COUNT; i++){
+
+        write(socket_list[i],"g3",5);
+
         //sleep(1);
       }
       daytime_pre(socket_list,player_list);
+
       game_state += 1;
+
     }
+
     if (game_state == 4){
+
+        if (check_win(player_list)){
+          if (check_win(player_list) == 1){
+            for (int i = 0; i < PLAYER_COUNT; i++){
+              write(socket_list[i],"tw", 15);
+            }
+          }
+          if (check_win(player_list) == 2){
+            for (int i = 0; i < PLAYER_COUNT; i++){
+              write(socket_list[i],"mw", 15);
+            }
+          }
+        }
       for (int i = 0; i < PLAYER_COUNT; i++){
-        if ((&player_list[i])-> isalive){
+
         write(socket_list[i],"g4",5);
-      }
         //sleep(1);
       }
       handle_vote(socket_list,player_list);
@@ -356,23 +394,32 @@ int run_game(int * socket_list){
           break;
         }
       }
-      printf("I progressed to the next state \n");
       game_state +=1;
     }
     if (game_state == 5){
-      for (int i = 0; i < PLAYER_COUNT; i++){
-        if ((&player_list[i])-> isalive){
-        write(socket_list[i],"g5",5);
+
+      if (check_win(player_list)){
+        if (check_win(player_list) == 1){
+          for (int i = 0; i < PLAYER_COUNT; i++){
+            write(socket_list[i],"tw", 15);
+          }
+        }
+        if (check_win(player_list) == 2){
+          for (int i = 0; i < PLAYER_COUNT; i++){
+            write(socket_list[i],"mw", 15);
+          }
+        }
       }
+      for (int i = 0; i < PLAYER_COUNT; i++){
+        write(socket_list[i],"g5",5);
         //sleep(1);
       }
-      printf("I progressed to 5 state \n");
+
       announce_executed(socket_list,player_list);
       //sleep(2);
-      printf("CHANGING GAME STATE \n");
-      printf("%d \n", game_state);
+
       game_state -= 3;
-      printf("%d \n", game_state);
+
     }
   }
 }
