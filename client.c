@@ -122,17 +122,7 @@ int main(int argc, char **argv) {
       char m[BUFFER_SIZE];
       read(server_socket,m,BUFFER_SIZE);
       printf("%s \n",m);
-      if (strstr(m,name)){
-        printf("I wrote shit to the server \n");
-        write(server_socket,will_statement,sizeof(will_statement));
-      }
-
-        sleep(1);
-        char z[250];
-        read(server_socket,z,250);
-        printf("%s \n",z);
-
-    //  sleep(1);
+      sleep(1);
     }
     if(strncmp(state_read,"g4",sizeof("g4")) == 0){
       printf("DAY %d \n",day);

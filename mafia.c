@@ -1,6 +1,8 @@
 #include "mafia.h"
 #include <string.h>
+#include <stdlib.h>
 #include <unistd.h>
+#include <assert.h>
 int PLAYER_COUNT = 2;
 int T_WIN = 1;
 int M_WIN = 2;
@@ -9,6 +11,56 @@ int S_WIN = 3;
 // game state temporarily outside of run_game
 // wills cant be empty
 // sometimes messages get sent two times
+
+// Helper Function - DONT TOUCH
+char** str_split(char* a_str, const char a_delim)
+{
+    char** result    = 0;
+    size_t count     = 0;
+    char* tmp        = a_str;
+    char* last_comma = 0;
+    char delim[2];
+    delim[0] = a_delim;
+    delim[1] = 0;
+
+    /* Count how many elements will be extracted. */
+    while (*tmp)
+    {
+        if (a_delim == *tmp)
+        {
+            count++;
+            last_comma = tmp;
+        }
+        tmp++;
+    }
+
+    /* Add space for trailing token. */
+    count += last_comma < (a_str + strlen(a_str) - 1);
+
+    /* Add space for terminating null string so caller
+       knows where the list of returned strings ends. */
+    count++;
+
+    result = malloc(sizeof(char*) * count);
+
+    if (result)
+    {
+        size_t idx  = 0;
+        char* token = strtok(a_str, delim);
+
+        while (token)
+        {
+            assert(idx < count);
+            *(result + idx++) = strdup(token);
+            token = strtok(0, delim);
+        }
+        assert(idx == count - 1);
+        *(result + idx) = 0;
+    }
+
+    return result;
+}
+
 
 int game_state = 0;
 
@@ -79,6 +131,7 @@ int verify_names(struct Player * p_list){
   }
   return count;
 }
+
 int verify_action(struct Player * p_list){
   int count = 0;
   for(int z = 0; z < PLAYER_COUNT; z++){
@@ -88,6 +141,7 @@ int verify_action(struct Player * p_list){
   }
   return count;
 }
+
 void action(int * socket_list, struct Player * p_list){
   int t = fork();
   char killed[20];
@@ -114,8 +168,10 @@ void action(int * socket_list, struct Player * p_list){
   }
       //exit(0);
   //}
-return;
-}
+  return;
+  }
+
+
 int daytime_pre(int * socket_list, struct Player * p_list){
   char killed[20];
   char killmsg[250];
@@ -123,11 +179,10 @@ int daytime_pre(int * socket_list, struct Player * p_list){
   int id = -1;
 
   for (int i = 0; i < PLAYER_COUNT; i++){
-
     if ((&p_list[i]) -> isalive == 0 && (&p_list[i]) -> announced == 0){
       strncpy(killed,(&p_list[i]) -> nickname, sizeof((&p_list[i]) -> nickname));
       (&p_list[i]) -> announced = 1;
-      strncpy(killmsg,"Last night, a member died: ",sizeof("Last night, a member died: "));
+      strncat(killmsg,"Last night, a member died: ",sizeof("Last night, a member died: "));
       strncat(killmsg,killed,sizeof(killed));
       id = i;
     }
@@ -142,6 +197,7 @@ int daytime_pre(int * socket_list, struct Player * p_list){
   }
   return id;
 }
+
 int run_game(int * socket_list){
   //Player Structs go here
   struct Player * player_list = (struct Player *) calloc(PLAYER_COUNT,sizeof(struct Player));
@@ -198,6 +254,7 @@ int run_game(int * socket_list){
         //sleep(1);
       }
       action(socket_list,player_list);
+      sleep(1);
       while(1){
         if(verify_action(player_list) == PLAYER_COUNT){
           break;
@@ -211,8 +268,12 @@ int run_game(int * socket_list){
         write(socket_list[i],"g3",5);
         //sleep(1);
       }
-      char will[250];
-      int key = daytime_pre(socket_list,player_list);
+      daytime_pre(socket_list,player_list);
+      /*
+      for (int i = 0; i < PLAYER_COUNT; i++){
+        write(socket_list[i],(&player_list[key]) -> will_statement,250);
+      }
+      /*
       printf("%d ",key);
       if (key > -1) {
         printf("i famsf9o0awofko \n");
@@ -223,6 +284,7 @@ int run_game(int * socket_list){
           write(socket_list[i],will,250);
         }
       }
+      */
 
       game_state += 1;
     }
