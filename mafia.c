@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <assert.h>
-int PLAYER_COUNT = 2;
+int PLAYER_COUNT = 3;
 int T_WIN = 1;
 int M_WIN = 2;
 int S_WIN = 3;
@@ -86,7 +86,12 @@ int verify_names(struct Player * p_list){
 int verify_action(struct Player * p_list){
   int count = 0;
   for(int z = 0; z < PLAYER_COUNT; z++){
-    if (strlen((&p_list[z])->action) > 0) {
+    if ((&p_list[z])-> isalive){
+      if (strlen((&p_list[z])->action) > 0) {
+        count += 1;
+      }
+    }
+    else {
       count += 1;
     }
   }
@@ -96,7 +101,12 @@ int verify_action(struct Player * p_list){
 int verify_vote(struct Player * p_list){
   int count = 0;
   for (int z = 0; z < PLAYER_COUNT; z++){
-    if((&p_list[z])->votes){
+    if ((&p_list[z])-> isalive){
+      if((&p_list[z])->votes){
+        count += 1;
+      }
+    }
+    else{
       count += 1;
     }
   }
@@ -107,12 +117,11 @@ void action(int * socket_list, struct Player * p_list){
   int t = fork();
   char killed[20];
   for(int i = 0; i < PLAYER_COUNT; i++){
-   if (!t){
+   if (!t && (&p_list[i])-> isalive){
       char temp[20];
-      //while(strlen(name) == 0){
+
         read(socket_list[i],temp,20);
-        //sleep(1);
-        //printf("%s \n",temp);
+
         chop_space(temp);
       //}
       strncpy((&p_list[i])-> action,temp,sizeof(temp));
@@ -167,16 +176,18 @@ void handle_vote(int * socket_list, struct Player * p_list){
   int * votes = calloc(PLAYER_COUNT,sizeof(int));
 
   for (int i = 0; i < PLAYER_COUNT; i++){
-    char n[25];
+    if ((&p_list[i])-> isalive) {
+      char n[25];
 
-    (&p_list[i]) -> votes = 1;
-    read(socket_list[i],n,25);
+      (&p_list[i]) -> votes = 1;
+      read(socket_list[i],n,25);
 
-    sleep(1);
+      sleep(1);
 
-    for (int x = 0; x < PLAYER_COUNT; x++){
-      if (strcmp(n,(&p_list[x]) -> nickname) == 0){
-        votes[x] += 1;
+      for (int x = 0; x < PLAYER_COUNT; x++){
+        if (strcmp(n,(&p_list[x]) -> nickname) == 0){
+          votes[x] += 1;
+        }
       }
     }
   }
@@ -223,6 +234,35 @@ void announce_executed(int * socket_list,struct Player* player_list){
   }
 }
 
+int check_win(struct Player * p_list){
+    int life_check = 0;
+    for (int i = 0; i < PLAYER_COUNT; i++){
+      if ((&p_list[i])-> isalive == 1){
+        life_check += 1;
+      }
+    }
+    if (life_check < PLAYER_COUNT){
+      int count_mafia = 0;
+      int count_town = 0;
+      for(int z = 0; z < PLAYER_COUNT; z++){
+        if (((&p_list[z]) -> isalive == 1) && (strcmp((&p_list[z]) -> role,"town") == 0)){
+          count_town += 1;
+        }
+        if (((&p_list[z]) -> isalive == 1) && (strcmp((&p_list[z]) -> role,"mafia") == 0)){
+          count_mafia += 1;
+        }
+      }
+      if (count_mafia == 1 && count_town ==0){
+        return M_WIN;
+      }
+      if (count_mafia == 0 && count_town >0){
+        return T_WIN;
+      }
+    }
+    return 0;
+}
+
+
 int run_game(int * socket_list){
   //Player Structs go here
   struct Player * player_list = (struct Player *) calloc(PLAYER_COUNT,sizeof(struct Player));
@@ -266,6 +306,7 @@ int run_game(int * socket_list){
 
       for (int i = 0; i < PLAYER_COUNT; i++){
         write(socket_list[i],"g1",5);
+
         //sleep(1);
         write(socket_list[i],roster,sizeof(roster));
         //sleep(1);
@@ -274,9 +315,11 @@ int run_game(int * socket_list){
       game_state += 1;
     }
     if(game_state == 2){
-      printf("THIS IS GS2 \n");
+
       for (int i = 0; i < PLAYER_COUNT; i++){
+        if ((&player_list[i])-> isalive){
         write(socket_list[i],"g2",5);
+      }
         //sleep(1);
       }
       action(socket_list,player_list);
@@ -291,7 +334,9 @@ int run_game(int * socket_list){
     }
     if(game_state == 3){
       for (int i = 0; i < PLAYER_COUNT; i++){
+        if ((&player_list[i])-> isalive){
         write(socket_list[i],"g3",5);
+      }
         //sleep(1);
       }
       daytime_pre(socket_list,player_list);
@@ -299,7 +344,9 @@ int run_game(int * socket_list){
     }
     if (game_state == 4){
       for (int i = 0; i < PLAYER_COUNT; i++){
+        if ((&player_list[i])-> isalive){
         write(socket_list[i],"g4",5);
+      }
         //sleep(1);
       }
       handle_vote(socket_list,player_list);
@@ -309,12 +356,14 @@ int run_game(int * socket_list){
           break;
         }
       }
-      printf("I progressed to the enxt state \n");
+      printf("I progressed to the next state \n");
       game_state +=1;
     }
     if (game_state == 5){
       for (int i = 0; i < PLAYER_COUNT; i++){
+        if ((&player_list[i])-> isalive){
         write(socket_list[i],"g5",5);
+      }
         //sleep(1);
       }
       printf("I progressed to 5 state \n");
