@@ -3,7 +3,16 @@
 void process(char *s);
 void subserver(int *from_clients);
 
+static void sighandler(int n){
+  if(n == SIGINT || n == SIGKILL){
+    printf("[server] exiting");
+    exit(0);
+  }
+}
+
 int main() {
+  signal(SIGINT, sighandler);
+  signal(SIGKILL, sighandler);
 
   int listen_socket;
   int client_socket;
