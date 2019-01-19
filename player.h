@@ -3,6 +3,7 @@ struct Player {
   int isalive;
   int perms;
   int votes;
+  int announced;
   char nickname[20];
   char role[10];
   char action[20];

@@ -1,14 +1,26 @@
 #include "networking.h"
 #include "mafia.h"
-
+#include <time.h>
+#include <string.h>
 char role[20];
 char name[20];
+char will_statement[250];
 int server_socket;
 char buff[BUFFER_SIZE];
 int sent_name = 0;
 int roster = 0;
 int day = 0;
 int dead = 0;
+int performed = 0;
+
+void chop_space(char * string){
+  int z = 0;
+  while(string[z] != '\n'){
+    z++;
+  }
+  string[z] = '\0';
+  return;
+}
 
 int send_name(int serv_sock){
   printf("Please enter your nickname: ");
@@ -16,7 +28,38 @@ int send_name(int serv_sock){
   write(serv_sock,name,20);
   return 1;
 }
+void do_action(int serv_sock){
+  char rec[3];
+  printf("Here are your actions: \n");
+  if (strncmp(role,"Mafia",sizeof("Mafia")) == 0){
+    printf("[1]: Write Will \n");
+    printf("[2]: Kill \n");
+  }
+  else if (strncmp(role,"Town Member",sizeof("Town Member")) == 0){
+    printf("[1]: Write Will \n");
+  }
+  printf("Enter a number corresponding to your actions: ");
+  fgets(rec,3,stdin);
+  chop_space(rec);
+  if (strncmp(rec,"1",sizeof(1)) == 0) {
+    printf("Write your will: ");
+    fgets(will_statement,250,stdin);
+    //printf("%s \n",will_statement);
+    write(serv_sock,"written",sizeof("written"));
+  }
+  if(strncmp(role,"Mafia",sizeof("Mafia")) ==0 && strncmp(rec,"2",sizeof("2")) == 0 ){
+    printf("Enter the name of the player you want to kill: ");
+    char victim[20];
+    fgets(victim,20,stdin);
+    //printf("%s \n",victim);
+    write(serv_sock,victim,sizeof(victim));
+  }
+  return;
+}
 
+void destruction(int serv_sock){
+  //printf("")
+}
 void send_msg(int serv_sock, char * msg){
   write(serv_sock,msg,sizeof(msg));
 }
@@ -25,119 +68,82 @@ int main(int argc, char **argv) {
   printf("[Client] Waiting for connection to server \n");
   server_socket = client_setup(TEST_IP);
   read(server_socket,buff,BUFFER_SIZE);
-
+  //sleep(1);
   if (strstr(buff,"Mafia")){
-    strcpy(role,"Mafia");
-  }
-  else if(strstr(buff,"Doctor")){
-    strcpy(role,"Doctor");
+    strncpy(role,"Mafia",sizeof("Mafia"));
   }
   else{
-    strcpy(role, "Town Member");
+    strncpy(role, "Town Member",sizeof("Town Member"));
   }
   //print the initial message
   printf("%s", buff);
 
   while (1) {
-    if (dead == 1) {
-      return;
-    }
     char state_read[5];
     read(server_socket,state_read,5);
-    if (strcmp(state_read, "g0")== 0 && !(sent_name)){
+    //sleep(1);
+    if (strncmp(state_read, "g0",sizeof("g0"))== 0 && !(sent_name)){
       //printf("Worked");
       sent_name = send_name(server_socket);
     }
-    if (strcmp(state_read, "g0")== 0 && sent_name == 1){
+    if (strncmp(state_read, "g0",sizeof("g0"))== 0 && sent_name == 1){
       printf("Please Wait! Your name has been set \n");
       sent_name += 1;
     }
-
-    if (strcmp(state_read, "g1")==0 && roster == 0){
+    if (strncmp(state_read, "g1",sizeof("g1"))==0 && roster == 0){
       //Listen for a message
       printf("Role: %s \n",role);
       printf("Game is starting soon... \n");
       char msg[BUFFER_SIZE];
       read(server_socket,msg,BUFFER_SIZE);
+      sleep(1);
       printf("%s",msg);
       roster += 1;
     }
-    if (strcmp(state_read,"g2")==0){
-      nightTime();
+
+    if (strncmp(state_read,"g2",sizeof("g2"))==0 && !(performed)){
+      day += 1;
+      printf("NIGHT %d \n",day);
+      do_action(server_socket);
+      performed += 1;
     }
-    if (strcmp(state_read,"g3")==0){
-      // printf("Does this run??\n");
-      char msg[BUFFER_SIZE];
-      read(server_socket,msg,BUFFER_SIZE);
-      printf("%s\n",msg);
-      char *pch = strstr(msg, "you have died");
-      if (pch) {
-          printf("You have lost...\n");
-          dead = 1;
+
+    if(strncmp(state_read,"g2",sizeof("g2")) == 0 && performed == 1){
+      char msg[50];
+      strncpy(msg,"The night ends soon...\n",sizeof("The night ends soon... \n"));
+      //sleep(1);
+      printf("%s",msg);
+      sleep(1);
+      performed += 1;
+      //sleep(1);
+    }
+
+    if(strncmp(state_read,"g3",sizeof("g3")) == 0){
+      char m[BUFFER_SIZE];
+      read(server_socket,m,BUFFER_SIZE);
+      printf("%s \n",m);
+      if (strstr(m,name)){
+        printf("I wrote shit to the server \n");
+        write(server_socket,will_statement,sizeof(will_statement));
       }
-      writeWill();
+
+        sleep(1);
+        char z[250];
+        read(server_socket,z,250);
+        printf("%s \n",z);
+
+    //  sleep(1);
     }
-    if (strcmp(state_read,"g4")==0) {
-      printf("Who would you like to suspect? (Vote for nobody by hitting enter): ");
-      getData(server_socket);
+    if(strncmp(state_read,"g4",sizeof("g4")) == 0){
+      printf("DAY %d \n",day);
     }
-    if (strcmp(state_read,"g5")==0) {
-      char msg[BUFFER_SIZE];
-      read(server_socket,msg,BUFFER_SIZE);
-      printf("%s\n",msg);
-      char *pch = strstr(msg, "you have died");
-      if (pch) {
-          printf("You have lost...\n");
-          dead = 1;
-      }
-    }
-    if (strcmp(state_read,"g6")==0) {
-      printf("Game Over! Mafia win!\n");
-    }
-    if (strcmp(state_read,"g7")==0) {
-      printf("Game Over! Mafia lose!\n");
-    }
+
   }
+  return 0;
 }
 
 int getData(int serv_sock){
   fgets(name, 20, stdin);
   write(serv_sock,name,20);
   return 1;
-}
-
-void writeWill () {
-  char will[100];
-  day += 1;
-  printf("---------------------------\n");
-  printf("Days Past: %d \n",day);
-  printf("(MORNING) \n");
-  printf("---------------------------\n");
-  if (dead == 0) {
-    printf("Please write your will: ");
-    fgets(will, 100, stdin);
-    write(server_socket, will, 100);
-  } else {
-    write(server_socket, "", 100);
-  }
-}
-
-void nightTime () {
-      day += 1;
-      printf("---------------------------\n");
-      printf("Days Past: %d \n",day);
-      printf("(NIGHT) \n");
-      printf("---------------------------\n");
-      if (strcmp(role, "Doctor") == 0) {
-	       printf("Which person would you like to heal?: ");
-         getData(server_socket);
-      }
-      if (strcmp(role, "Mafia") == 0) {
-	       printf("Which person would you like to kill?: ");
-         getData(server_socket);
-      }
-      if (strcmp(role, "Town Member") == 0) {
-	       printf("<Town members cannot do anything during the night> \n");
-         write(server_socket,"N/A",20);
-      }
 }

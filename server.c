@@ -21,8 +21,8 @@ int main() {
     int * player_list;
 
     p_count = 0;
-    player_list = (int *) calloc(3, sizeof(int));
-    while (p_count < 3) {
+    player_list = (int *) calloc(PLAYER_COUNT, sizeof(int));
+    while (p_count < PLAYER_COUNT) {
       //wait for multiple clients to connect
       //create list of client sockets,
       player_list[p_count] = server_connect(listen_socket);
