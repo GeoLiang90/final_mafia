@@ -16,3 +16,5 @@
 01/16/2019 George Liang: Built off the basic networking framework to build the gamestate framework.
 	   Established communication through text from the server to the client. Verified progressable
 	   gamestates and implemented the pregame. Clients are assigned names and roles. 
+
+01/14-15/2019 Richard Wong/ Sajed Nahian: Attempted to build custom tcp server that unfortunately corrupted a lot of buffers.
