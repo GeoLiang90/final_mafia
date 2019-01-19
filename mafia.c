@@ -8,59 +8,6 @@ int T_WIN = 1;
 int M_WIN = 2;
 int S_WIN = 3;
 
-// game state temporarily outside of run_game
-// wills cant be empty
-// sometimes messages get sent two times
-
-// Helper Function - DONT TOUCH
-char** str_split(char* a_str, const char a_delim)
-{
-    char** result    = 0;
-    size_t count     = 0;
-    char* tmp        = a_str;
-    char* last_comma = 0;
-    char delim[2];
-    delim[0] = a_delim;
-    delim[1] = 0;
-
-    /* Count how many elements will be extracted. */
-    while (*tmp)
-    {
-        if (a_delim == *tmp)
-        {
-            count++;
-            last_comma = tmp;
-        }
-        tmp++;
-    }
-
-    /* Add space for trailing token. */
-    count += last_comma < (a_str + strlen(a_str) - 1);
-
-    /* Add space for terminating null string so caller
-       knows where the list of returned strings ends. */
-    count++;
-
-    result = malloc(sizeof(char*) * count);
-
-    if (result)
-    {
-        size_t idx  = 0;
-        char* token = strtok(a_str, delim);
-
-        while (token)
-        {
-            assert(idx < count);
-            *(result + idx++) = strdup(token);
-            token = strtok(0, delim);
-        }
-        assert(idx == count - 1);
-        *(result + idx) = 0;
-    }
-
-    return result;
-}
-
 
 int game_state = 0;
 
@@ -77,6 +24,8 @@ void assign_roles(int * socket_list, struct Player * p_list){
       (&p_list[pop_count])-> perms = 1;
       (&p_list[pop_count])-> votes = 0;
       (&p_list[pop_count])-> announced = 0;
+      (&p_list[pop_count])-> executed = 0;
+      (&p_list[pop_count])-> exec_a = 0;
       write(socket_list[pop_count],b,sizeof(b));
       //sleep(1);
 
@@ -90,6 +39,8 @@ void assign_roles(int * socket_list, struct Player * p_list){
       (&p_list[pop_count])-> perms = 0;
       (&p_list[pop_count])-> votes = 0;
       (&p_list[pop_count])-> announced = 0;
+      (&p_list[pop_count])-> executed = 0;
+      (&p_list[pop_count])-> exec_a = 0;
       write(socket_list[pop_count],buff,sizeof(buff));
       //sleep(1);
     }
@@ -142,6 +93,16 @@ int verify_action(struct Player * p_list){
   return count;
 }
 
+int verify_vote(struct Player * p_list){
+  int count = 0;
+  for (int z = 0; z < PLAYER_COUNT; z++){
+    if((&p_list[z])->votes){
+      count += 1;
+    }
+  }
+  return count;
+}
+
 void action(int * socket_list, struct Player * p_list){
   int t = fork();
   char killed[20];
@@ -182,7 +143,7 @@ int daytime_pre(int * socket_list, struct Player * p_list){
     if ((&p_list[i]) -> isalive == 0 && (&p_list[i]) -> announced == 0){
       strncpy(killed,(&p_list[i]) -> nickname, sizeof((&p_list[i]) -> nickname));
       (&p_list[i]) -> announced = 1;
-      strncat(killmsg,"Last night, a member died: ",sizeof("Last night, a member died: "));
+      strncpy(killmsg,"Last night, a member died: ",sizeof("Last night, a member died: "));
       strncat(killmsg,killed,sizeof(killed));
       id = i;
     }
@@ -196,6 +157,70 @@ int daytime_pre(int * socket_list, struct Player * p_list){
     sleep(1);
   }
   return id;
+}
+
+void handle_vote(int * socket_list, struct Player * p_list){
+  for (int z = 0; z < PLAYER_COUNT; z++){
+    (&p_list[z]) -> votes = 0;
+  }
+
+  int * votes = calloc(PLAYER_COUNT,sizeof(int));
+
+  for (int i = 0; i < PLAYER_COUNT; i++){
+    char n[25];
+
+    (&p_list[i]) -> votes = 1;
+    read(socket_list[i],n,25);
+
+    sleep(1);
+
+    for (int x = 0; x < PLAYER_COUNT; x++){
+      if (strcmp(n,(&p_list[x]) -> nickname) == 0){
+        votes[x] += 1;
+      }
+    }
+  }
+  int position = -1;
+  int highest = 0;
+  for (int z = 0; z < PLAYER_COUNT; z++){
+    if (votes[z] > highest){
+      position = z;
+      highest = votes[z];
+    }
+  }
+  for (int a = 0; a < PLAYER_COUNT; a++){
+    printf("%s ",(&p_list[a]) -> nickname);
+    printf("%d \n",votes[a]);
+  }
+  printf("%s", (&p_list[position]) -> nickname);
+  printf("%d \n",highest);
+  (&p_list[position]) -> isalive = 0;
+  (&p_list[position]) -> announced = 1;
+  (&p_list[position]) -> executed = 1;
+  /*
+  char end[50];
+  strcpy(end,"Farewell cruel world this person has passed: ");
+  strcat(end,(&p_list[position]) -> nickname);
+  for (int v = 0; v < PLAYER_COUNT; v++){
+    write(socket_list[v], end, 50);
+  }
+  */
+  return;
+}
+
+void announce_executed(int * socket_list,struct Player* player_list){
+  for (int i = 0; i < PLAYER_COUNT; i++){
+    if((&player_list[i]) -> executed && !((&player_list[i]) -> exec_a) ){
+      char end[50];
+      strcpy(end,"Farewell cruel world this person has passed: ");
+      (&player_list[i]) -> exec_a = 1;
+      strcat(end,(&player_list[i]) -> nickname);
+      for (int v = 0; v < PLAYER_COUNT; v++){
+        write(socket_list[v], end, 50);
+        sleep(1);
+      }
+    }
+  }
 }
 
 int run_game(int * socket_list){
@@ -249,6 +274,7 @@ int run_game(int * socket_list){
       game_state += 1;
     }
     if(game_state == 2){
+      printf("THIS IS GS2 \n");
       for (int i = 0; i < PLAYER_COUNT; i++){
         write(socket_list[i],"g2",5);
         //sleep(1);
@@ -269,25 +295,35 @@ int run_game(int * socket_list){
         //sleep(1);
       }
       daytime_pre(socket_list,player_list);
-      /*
-      for (int i = 0; i < PLAYER_COUNT; i++){
-        write(socket_list[i],(&player_list[key]) -> will_statement,250);
-      }
-      /*
-      printf("%d ",key);
-      if (key > -1) {
-        printf("i famsf9o0awofko \n");
-        read(socket_list[key], will,250);
-        sleep(1);
-        for (int i = 0; i < PLAYER_COUNT; i++){
-          printf("aiosfnmaponfpoa");
-          write(socket_list[i],will,250);
-        }
-      }
-      */
-
       game_state += 1;
     }
-    return 0;
+    if (game_state == 4){
+      for (int i = 0; i < PLAYER_COUNT; i++){
+        write(socket_list[i],"g4",5);
+        //sleep(1);
+      }
+      handle_vote(socket_list,player_list);
+      sleep(1);
+      while(1){
+        if(verify_vote(player_list) == PLAYER_COUNT){
+          break;
+        }
+      }
+      printf("I progressed to the enxt state \n");
+      game_state +=1;
+    }
+    if (game_state == 5){
+      for (int i = 0; i < PLAYER_COUNT; i++){
+        write(socket_list[i],"g5",5);
+        //sleep(1);
+      }
+      printf("I progressed to 5 state \n");
+      announce_executed(socket_list,player_list);
+      //sleep(2);
+      printf("CHANGING GAME STATE \n");
+      printf("%d \n", game_state);
+      game_state -= 3;
+      printf("%d \n", game_state);
+    }
   }
 }

@@ -15,6 +15,7 @@ void assign_name(int * socket_list, struct Player * p_list);
 int verify_names(struct Player * p_list);
 void chop_space(char * string);
 void write_client(int * socket_list, char * buf);
+void announce_executed(int * socket_list,struct Player * player_list);
 extern int PLAYER_COUNT;
 extern int T_WIN;
 extern int  M_WIN;

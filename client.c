@@ -57,9 +57,15 @@ void do_action(int serv_sock){
   return;
 }
 
-void destruction(int serv_sock){
-  //printf("")
+void do_vote(int serv_sock){
+  char n[25];
+  printf("Enter the player you want to eliminate. Everyone must vote!: ");
+  fgets(n,25,stdin);
+  chop_space(n);
+  write(serv_sock, n, sizeof(n));
+  sleep(1);
 }
+
 void send_msg(int serv_sock, char * msg){
   write(serv_sock,msg,sizeof(msg));
 }
@@ -119,6 +125,7 @@ int main(int argc, char **argv) {
     }
 
     if(strncmp(state_read,"g3",sizeof("g3")) == 0){
+      performed = 0;
       char m[BUFFER_SIZE];
       read(server_socket,m,BUFFER_SIZE);
       printf("%s \n",m);
@@ -126,6 +133,16 @@ int main(int argc, char **argv) {
     }
     if(strncmp(state_read,"g4",sizeof("g4")) == 0){
       printf("DAY %d \n",day);
+      do_vote(server_socket);
+    }
+    if(strncmp(state_read,"g5",sizeof("g5")) == 0){
+      printf("I progressed to the enxt state \n");
+      char e[BUFFER_SIZE];
+      read(server_socket,e,BUFFER_SIZE);
+      printf("%s \n",e);
+      printf("Dawn is falling and the night shall soon arise! \n");
+      strncpy(state_read,"g2",sizeof("g2"));
+      //sleep(1);
     }
 
   }
