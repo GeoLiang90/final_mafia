@@ -9,3 +9,7 @@ Our project is based off of the game Mafia which consists of mafia and town memb
 - Run make <br/>
 - Run ./server <br/>
 - Run ./client <br/> In 3 different clients. More clients can be included by simply changing the PLAYER_COUNT variable in our code.
+
+### Known Bugs:
+- Game doesn't completely end, but people do dominate.
+- Data corrupted from writing and reading through network sockets.
